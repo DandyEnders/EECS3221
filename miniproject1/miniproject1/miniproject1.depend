@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1580329586 source:/eecs/home/howden2/3y2sem/EECS3221/miniproject1/miniproject1/main.c
+	<stdio.h>
+	<unistd.h>
+	<string.h>
+	<sys/types.h>
+	<sys/wait.h>
+
