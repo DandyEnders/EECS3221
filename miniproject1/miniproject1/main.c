@@ -4,9 +4,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #define MAX_LINE 80 /* The maximum length command */
 #define HALF_LINE MAX_LINE/2 + 1
-#define N_CMD_TOKENS 4
+#define N_CMD_TOKENS 10
 #define CMD_LEN 20
 
 /*
@@ -78,10 +79,16 @@ int main(void) {
 
     char    curr_dir[2048]; // pwd
 
-    pid_t   pid;
+    pid_t   pid;            // for forking
 
     int     is_background_task; // is next task background?
-    int     i;                  // variant    
+    int     is_direct_left;     // cmd < cmd
+    int     is_direct_right;    // cmd > cmd
+    int     is_pipe;            // cmd | cmd
+
+    int     i;                  // variant  
+    int     redirect_pos;       // when we direct or pipe, we need to konw the position of direct / pipe
+
 
     // Init
     prev_args = malloc (MAX_LINE * sizeof(char *));
@@ -93,9 +100,16 @@ int main(void) {
         /*
             Start init
         */
+        is_direct_left = 0;
+        is_direct_right = 0;
+        is_pipe = 0;
+        is_background_task = 0;
+    
+        i = 0;
+        redirect_pos = 0;
+
         // get curr dir right now.
         getcwd(curr_dir, sizeof(curr_dir));
-        is_background_task = 0;
 
         // Jinho shell, jsh
         printf("jsh:%s$ ", curr_dir);
@@ -153,9 +167,12 @@ int main(void) {
         //commands is mutable args_token.
         commands = get_args_tokens(args);
 
-        // Check if background task.
-        // Start from last commands.
-        // We don't check the first word.
+        /*
+            Check if above commands is background task
+        
+            Start from last commands.
+            We don't check the first word.
+        */
         for(i = N_CMD_TOKENS - 1; i >= 1; i-- ){
             if(commands[i] != NULL){
                 int is_last_ampersand = commands[i][strlen(commands[i])-1] == '&';
@@ -175,7 +192,33 @@ int main(void) {
                 break;
             }
         }
+
+        /*
+         Check for
+         1. left redirection
+         2. right redirection
+         3. pipe
+        */
+       for(i = N_CMD_TOKENS - 1; i >= 1; i-- ){
+            if(args_token[i] != NULL){
+                if(my_strcmp(args_token[i], "<")){
+                    is_direct_left = 1; 
+                    redirect_pos = i;
+                    i = 0; // break
+                }else if(my_strcmp(args_token[i], ">")){
+                    is_direct_right = 1;
+                    redirect_pos = i;
+                    i = 0; // break
+                }else if(my_strcmp(args_token[i], "|")){
+                    is_pipe = 1; 
+                    redirect_pos = i; 
+                    i = 0; // break
+                }
+                
+            }
+        }
         
+
         /*
             Actual execution.
         */
@@ -185,13 +228,42 @@ int main(void) {
         if(pid < 0){
             fprintf(stderr, "Failed to fork, pid: %d\n", pid);
         }else if(pid == 0){ // if pid == 0, child process.
+
             if(is_background_task){
                 setpgid(0,0); // make this child go background process
             }
-            if(my_strcmp(args_token[0], "pwd")){
+
+            if (is_direct_left) {
+                int fd0 = open(args_token[redirect_pos + 1], O_RDONLY);
+                if (fd0 == -1) {
+                    fprintf(stderr, "Left redirection failed!\n");
+                    return 1;
+                }
+                dup2(fd0, 0);
+                close(fd0);
+            }else if (is_direct_right){
+                int fd1 = open(args_token[redirect_pos + 1], O_CREAT | O_WRONLY | O_TRUNC, S_IWUSR);
+                if (fd1 == -1) {          
+                    fprintf(stderr, "Right redirection failed!\n");
+                    return 1;
+                }
+                dup2(fd1, 1);
+                close(fd1);
+            }
+
+            // make redirection and everything to right null.
+            // ls -le > out.txt => ls -le (null) (null)
+            if(is_direct_left || is_direct_right){
+                for(i = redirect_pos; i < N_CMD_TOKENS; i++){
+                    commands[i] = NULL;
+                }
+            }
+
+
+            if(my_strcmp(commands[0], "pwd")){
                 getcwd(curr_dir, sizeof(curr_dir));
                 printf("%s\n", curr_dir);
-            }else if(my_strcmp(args_token[0], "cd")){
+            }else if(my_strcmp(commands[0], "cd")){
                 chdir(commands[1]);
             }else{
                 if(execvp(commands[0], commands) < 0){
