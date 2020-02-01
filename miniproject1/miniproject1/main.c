@@ -78,6 +78,8 @@ int main(void) {
 
     char    curr_dir[2048]; // pwd
 
+    pid_t   pid;
+
     int     is_background_task; // is next task background?
     int     i;                  // variant    
 
@@ -142,7 +144,7 @@ int main(void) {
         // Execute exit, pwd, cd
         if(my_strcmp(args_token[0], "exit")){
             printf("Bye!\n");
-            return(0);
+            return 0;
         }
 
         /* 
@@ -178,8 +180,6 @@ int main(void) {
             Actual execution.
         */
         // Forking
-        pid_t pid;
-        int status;
         pid = fork();
         
         if(pid < 0){
@@ -188,30 +188,17 @@ int main(void) {
             if(is_background_task){
                 setpgid(0,0); // make this child go background process
             }
-
-        // if not then execution mode
-        }else{
-            int my_pipe[2];
-
-            // Forking
-            pid_t pid;
-    //        int status;
-            pid = fork();
-            //if pid < 0, error occured.
-            if(pid < 0){
-                exit(1);
-            // if pid == 0, child process.
-            }else if(pid == 0){
-//                printf("Child process: %s, %s, %s\n", commands[0], commands[1], commands[2]);
-
-                execvp(commands[0], commands);
-            // if pid > 0, parent process.
+            if(my_strcmp(args_token[0], "pwd")){
+                getcwd(curr_dir, sizeof(curr_dir));
+                printf("%s\n", curr_dir);
+            }else if(my_strcmp(args_token[0], "cd")){
+                chdir(commands[1]);
             }else{
                 if(execvp(commands[0], commands) < 0){
                     fprintf(stderr, "Unknown command: %s\n", commands[0]);
                 }
             }
-            
+            return 0;
         }else{  // if pid > 0, parent process.
             if(is_background_task){
                 // nothing...
