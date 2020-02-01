@@ -80,6 +80,7 @@ int main(void) {
     char    curr_dir[2048]; // pwd
 
     pid_t   pid;            // for forking
+    pid_t   pipe_pid;       // for piping
 
     int     is_background_task; // is next task background?
     int     is_direct_left;     // cmd < cmd
@@ -87,7 +88,7 @@ int main(void) {
     int     is_pipe;            // cmd | cmd
 
     int     i;                  // variant  
-    int     redirect_pos;       // when we direct or pipe, we need to konw the position of direct / pipe
+    int     separator_pos;      // when we direct or pipe, we need to konw the position of direct / pipe
 
 
     // Init
@@ -106,7 +107,7 @@ int main(void) {
         is_background_task = 0;
     
         i = 0;
-        redirect_pos = 0;
+        separator_pos = 0;
 
         // get curr dir right now.
         getcwd(curr_dir, sizeof(curr_dir));
@@ -189,7 +190,7 @@ int main(void) {
                 }
                 
                 // We only have to check the last non-null word if ampersand exists.
-                break;
+                i = 0; // break;
             }
         }
 
@@ -203,15 +204,15 @@ int main(void) {
             if(args_token[i] != NULL){
                 if(my_strcmp(args_token[i], "<")){
                     is_direct_left = 1; 
-                    redirect_pos = i;
+                    separator_pos = i;
                     i = 0; // break
                 }else if(my_strcmp(args_token[i], ">")){
                     is_direct_right = 1;
-                    redirect_pos = i;
+                    separator_pos = i;
                     i = 0; // break
                 }else if(my_strcmp(args_token[i], "|")){
                     is_pipe = 1; 
-                    redirect_pos = i; 
+                    separator_pos = i; 
                     i = 0; // break
                 }
                 
@@ -220,7 +221,7 @@ int main(void) {
         
 
         /*
-            Actual execution.
+            Forking process
         */
         // Forking
         pid = fork();
@@ -229,45 +230,104 @@ int main(void) {
             fprintf(stderr, "Failed to fork, pid: %d\n", pid);
         }else if(pid == 0){ // if pid == 0, child process.
 
+            /*
+               Send child process background
+            */
             if(is_background_task){
                 setpgid(0,0); // make this child go background process
             }
 
-            if (is_direct_left) {
-                int fd0 = open(args_token[redirect_pos + 1], O_RDONLY);
-                if (fd0 == -1) {
-                    fprintf(stderr, "Left redirection failed!\n");
+            /*
+                Piping
+            */
+            if (is_pipe) {
+                int my_pipe[2];
+
+                if (pipe(my_pipe) < 0){
+                    fprintf(stderr, "Piping failed!\n");
                     return 1;
                 }
-                dup2(fd0, 0);
-                close(fd0);
-            }else if (is_direct_right){
-                int fd1 = open(args_token[redirect_pos + 1], O_CREAT | O_WRONLY | O_TRUNC, S_IWUSR);
-                if (fd1 == -1) {          
-                    fprintf(stderr, "Right redirection failed!\n");
+
+                pipe_pid = fork();
+
+                if (pipe_pid < 0){
+                    fprintf(stderr, "Pipe subprocessing failed!\n");
                     return 1;
+                }else if(pipe_pid == 0){
+                    close(my_pipe[0]);      // close read pipe
+                    dup2(my_pipe[1], 1);    // writepipe = stdout
+                    close(my_pipe[1]);      // close it
+
+                    // ls -l | grep lol => ls -l (null) (null)
+                    for(i = separator_pos; i < N_CMD_TOKENS; i++){
+                        commands[i] = NULL;
+                    }
+
+                    if(execvp(commands[0], commands) < 0){
+                        fprintf(stderr, "Pipe subprocess: Failed to execute: %s\n", commands[0]);
+                        return 1;
+                    }
+                    
+                    return 0;
+                }else{ // "parent"
+                    close(my_pipe[1]);      // close write pipe
+                    dup2(my_pipe[0], 0);    // pipe = stdin
+                    waitpid(pipe_pid, NULL, 0); // wait for pipe_pid
+                    close(my_pipe[0]);
+
+                    // ls -l | grep lol => grep lol (null) (null) (null)
+                    for(i = 0; i < N_CMD_TOKENS - separator_pos ; i++){
+                        commands[i] = commands[i+separator_pos+1];
+                        commands[i+separator_pos+1] = NULL;
+                    }
+
+                    if(execvp(commands[0], commands) < 0){
+                        fprintf(stderr, "Pipe subprocess: Failed to execute: %s\n", commands[0]);
+                        return 1;
+                    }
+                    return 0;
                 }
-                dup2(fd1, 1);
-                close(fd1);
-            }
 
-            // make redirection and everything to right null.
-            // ls -le > out.txt => ls -le (null) (null)
-            if(is_direct_left || is_direct_right){
-                for(i = redirect_pos; i < N_CMD_TOKENS; i++){
-                    commands[i] = NULL;
+                
+            }else{ // !is_pipe
+                /*
+                    Redirection
+                */
+                if (is_direct_left) {
+                    int fd0 = open(args_token[separator_pos + 1], O_RDONLY);
+                    if (fd0 == -1) {
+                        fprintf(stderr, "Left redirection failed!\n");
+                        return 1;
+                    }
+                    dup2(fd0, 0);
+                    close(fd0);
+                }else if (is_direct_right){
+                    int fd1 = open(args_token[separator_pos + 1], O_CREAT | O_WRONLY | O_TRUNC, S_IWUSR);
+                    if (fd1 == -1) {          
+                        fprintf(stderr, "Right redirection failed!\n");
+                        return 1;
+                    }
+                    dup2(fd1, 1);
+                    close(fd1);
                 }
-            }
 
+                // make redirection and everything to right null.
+                // ls -l > out.txt => ls -l (null) (null)
+                if(is_direct_left || is_direct_right){
+                    for(i = separator_pos; i < N_CMD_TOKENS; i++){
+                        commands[i] = NULL;
+                    }
+                }
 
-            if(my_strcmp(commands[0], "pwd")){
-                getcwd(curr_dir, sizeof(curr_dir));
-                printf("%s\n", curr_dir);
-            }else if(my_strcmp(commands[0], "cd")){
-                chdir(commands[1]);
-            }else{
-                if(execvp(commands[0], commands) < 0){
-                    fprintf(stderr, "Unknown command: %s\n", commands[0]);
+                if(my_strcmp(commands[0], "pwd")){
+                    getcwd(curr_dir, sizeof(curr_dir));
+                    printf("%s\n", curr_dir);
+                }else if(my_strcmp(commands[0], "cd")){
+                    chdir(commands[1]);
+                }else{
+                    if(execvp(commands[0], commands) < 0){
+                        fprintf(stderr, "Unknown command: %s\n", commands[0]);
+                    }
                 }
             }
             return 0;
