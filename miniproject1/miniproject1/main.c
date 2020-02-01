@@ -126,7 +126,7 @@ int main(void) {
             pid = fork();
             //if pid < 0, error occured.
             if(pid < 0){
-                printf("You failed fork: %s\n", stderr);
+                exit(1);
             // if pid == 0, child process.
             }else if(pid == 0){
 //                printf("Child process: %s, %s, %s\n", commands[0], commands[1], commands[2]);
