@@ -327,7 +327,7 @@ int main(void) {
                         commands[i] = NULL;
                     }
                 }
-                
+
                 if(my_strcmp(commands[0], "pwd")){
                     getcwd(curr_dir, sizeof(curr_dir));
                     printf("%s\n", curr_dir);
@@ -355,11 +355,3 @@ int main(void) {
 
 return 0;
 }
-
-
-
-/** After reading user input, the steps are:
- * (1) fork a child process using fork()
- * (2) the child process will invoke execvp()
- * (3) parent will invoke wait() unless command included &
- */
