@@ -1,12 +1,12 @@
-total 48
-drwxrwxrwx 1 howden2 howden2  4096 Jan 31 18:10 bin
--rwxrwxrwx 1 howden2 howden2  8704 Jan 31 18:10 main
--rwxrwxrwx 1 howden2 howden2 10886 Jan 31 23:01 main.c
--rwxrwxrwx 1 howden2 howden2  2312 Jan 31 18:10 main.o
--rwxrwxrwx 1 howden2 howden2 13584 Jan 31 23:02 main.out
--rwxrwxrwx 1 howden2 howden2    41 Jan 31 21:05 makefile
--rwxrwxrwx 1 howden2 howden2  1075 Jan 31 18:10 miniproject1.cbp
--rwxrwxrwx 1 howden2 howden2   182 Jan 31 18:10 miniproject1.depend
--rwxrwxrwx 1 howden2 howden2   358 Jan 31 18:10 miniproject1.layout
-drwxrwxrwx 1 howden2 howden2  4096 Jan 31 18:10 obj
--rwxrwxrwx 1 howden2 howden2     0 Jan 31 23:02 out.txt
+bin
+main
+main.c
+main.o
+main.out
+makefile
+miniproject1.cbp
+miniproject1.depend
+miniproject1.layout
+obj
+out.txt
+test

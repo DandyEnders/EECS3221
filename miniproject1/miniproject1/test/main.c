@@ -162,15 +162,6 @@ int main(void) {
             return 0;
         }
 
-        if(my_strcmp(args_token[0], "cd")){
-            if(chdir(args_token[1]) != 0){
-                fprintf(stderr, "cd failed. dir: %s\n", args_token[1]);
-            }
-            free(args);
-            free(args_token);
-            continue;
-        }
-
         /* 
             Mutable commands creation
         */
@@ -327,10 +318,12 @@ int main(void) {
                         commands[i] = NULL;
                     }
                 }
-                
+
                 if(my_strcmp(commands[0], "pwd")){
                     getcwd(curr_dir, sizeof(curr_dir));
                     printf("%s\n", curr_dir);
+                }else if(my_strcmp(commands[0], "cd")){
+                    chdir(commands[1]);
                 }else{
                     if(execvp(commands[0], commands) < 0){
                         fprintf(stderr, "Unknown command: %s\n", commands[0]);
