@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     char *name;
     int priority;
     int burst;
-
+    
     in = fopen(argv[1],"r");
     
     while (fgets(task,SIZE,in) != NULL) {

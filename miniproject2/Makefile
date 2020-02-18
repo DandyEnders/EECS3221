@@ -17,20 +17,20 @@ clean:
 	rm -rf priority
 	rm -rf priority_rr
 
-rr: driver.o list.o CPU.o schedule_rr.o
-	$(CC) $(CFLAGS) -o rr driver.o schedule_rr.o list.o CPU.o
+rr: driver.o list.o CPU.o schedule_rr.o queue.o
+	$(CC) $(CFLAGS) -o rr driver.o schedule_rr.o list.o CPU.o queue.o
 
-sjf: driver.o list.o CPU.o schedule_sjf.o
-	$(CC) $(CFLAGS) -o sjf driver.o schedule_sjf.o list.o CPU.o
+sjf: driver.o list.o CPU.o schedule_sjf.o queue.o
+	$(CC) $(CFLAGS) -o sjf driver.o schedule_sjf.o list.o CPU.o queue.o
 
-fcfs: driver.o list.o CPU.o schedule_fcfs.o
-	$(CC) $(CFLAGS) -o fcfs driver.o schedule_fcfs.o list.o CPU.o
+fcfs: driver.o list.o CPU.o schedule_fcfs.o queue.o
+	$(CC) $(CFLAGS) -o fcfs driver.o schedule_fcfs.o list.o CPU.o queue.o
 
-priority: driver.o list.o CPU.o schedule_priority.o
-	$(CC) $(CFLAGS) -o priority driver.o schedule_priority.o list.o CPU.o
+priority: driver.o list.o CPU.o schedule_priority.o queue.o
+	$(CC) $(CFLAGS) -o priority driver.o schedule_priority.o list.o CPU.o queue.o
 
-priority_rr: driver.o list.o CPU.o schedule_priority_rr.o
-	$(CC) $(CFLAGS) -o priority_rr driver.o schedule_priority_rr.o list.o CPU.o
+priority_rr: driver.o list.o CPU.o schedule_priority_rr.o queue.o
+	$(CC) $(CFLAGS) -o priority_rr driver.o schedule_priority_rr.o list.o CPU.o queue.o
 
 schedule_fcfs.o: schedule_fcfs.c
 	$(CC) $(CFLAGS) -c schedule_fcfs.c
@@ -52,3 +52,6 @@ list.o: list.c list.h
 
 CPU.o: CPU.c cpu.h
 	$(CC) $(CFLAGS) -c CPU.c
+
+queue.o: queue.c queue.h
+	$(CC) $(CFLAGS) -c queue.c
