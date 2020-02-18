@@ -33,7 +33,11 @@ Task *pickNextTask(){
 
 // invoke the scheduler
 void schedule(){
-    traverse(*head);
+    Task *next_task;
+    while(*head != NULL){
+        next_task = pickNextTask();
+        run(next_task, next_task->burst);
+    }
 
 }
 
