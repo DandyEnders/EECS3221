@@ -6,6 +6,9 @@
 #include "cpu.h"
 
 #define RUNTIME_SLICE current_task->burst;
+#define QUANTUM_SLICE current_task->burst <= QUANTUM ? current_task->burst: QUANTUM;
+
+#define IMPLEMENTATION_SLICE RUNTIME_SLICE
 
 // Arrival queue
 Queue *task_arriaval_queue;
@@ -48,7 +51,7 @@ void schedule(){
     int total_turnraround_time = 0;
     int total_response_time = 0;
 
-    int *turnaround_time = calloc(task_count, sizeof(int));
+    //int *turnaround_time = calloc(task_count, sizeof(int));
     int *response_time = calloc(task_count, sizeof(int));
 
     float avg_waiting_time = 0;
@@ -59,7 +62,7 @@ void schedule(){
     int time_quantum;
     Task *current_task;
     while((current_task = pickNextTask()) != NULL){
-        time_quantum = RUNTIME_SLICE;
+        time_quantum = IMPLEMENTATION_SLICE;
 
         run(current_task, time_quantum);
 
@@ -68,7 +71,7 @@ void schedule(){
 
         // while T1 is running for 20 units, T2..T8 waits 20 units.
         // T1's_total_waiting_time = T1_burst_time * len(T2..T8)
-        total_waiting_time += time_quantum * (task_count - (i + 1));
+        total_waiting_time += time_quantum * (n_remaining_task - 1);
 
         int current_task_index = current_task->tid - 1;
         
@@ -81,7 +84,7 @@ void schedule(){
         // when task is done running,
         if(current_task->burst == 0){
             n_remaining_task -= 1;
-            turnaround_time[current_task_index] = current_time_unit;
+            //turnaround_time[current_task_index] = current_time_unit;
             total_turnraround_time += current_time_unit;
         }  
 
@@ -96,5 +99,3 @@ void schedule(){
     printf("Average Turnaround time: %f, Waiting time:%f, Response time:%f\n",
             avg_turnaround_time, avg_waiting_time, avg_response_time);
 }
-
-//Average Turnaround time: 94.375000, Waiting time:73.125000, Response time:94.375000 
