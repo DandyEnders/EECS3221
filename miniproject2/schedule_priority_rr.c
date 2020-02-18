@@ -58,7 +58,6 @@ Task* pickNextTask(){
         return highest_priority_task;
     }
 }
-
 // invoke the scheduler
 void schedule(){
     task_queue = copy_queue(task_arriaval_queue);
