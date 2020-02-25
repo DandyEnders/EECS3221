@@ -118,7 +118,10 @@ void list_delete(Queue *a_queue, Task *a_task){
 
 // Iterator
 void start(Queue *a_queue){
-    a_queue->cursor = a_queue->head;
+    if(a_queue != NULL){
+        a_queue->cursor = a_queue->head;
+    }
+    
 }
 
 Task* next(Queue *a_queue){

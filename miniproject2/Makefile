@@ -44,6 +44,9 @@ schedule_sjf.o: schedule_sjf.c
 schedule_priority.o: schedule_priority.c
 	$(CC) $(CFLAGS) -c schedule_priority.c
 
+schedule_priority_rr.o: schedule_priority_rr.c
+	$(CC) $(CFLAGS) -c schedule_priority_rr.c
+
 schedule_rr.o: schedule_rr.c
 	$(CC) $(CFLAGS) -c schedule_rr.c
 

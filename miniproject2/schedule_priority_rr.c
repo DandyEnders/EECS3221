@@ -15,6 +15,8 @@ Queue *task_arriaval_queue;
 Queue *task_queue;
 int last_tid = 1;
 
+int time_quantum = 0;
+
 // add a task to the list 
 void add(char *name, int priority, int burst){
     if(task_arriaval_queue == NULL){
@@ -43,17 +45,39 @@ Task* pickNextTask(){
         start(task_queue);
         Task* cursor_task;
         while((cursor_task = next(task_queue)) != NULL){
-            if(cursor_task->priority < highest_priority_task->priority){
+            if(cursor_task->priority > highest_priority_task->priority){
                 highest_priority_task = cursor_task;
             }
         }
         list_delete(task_queue, highest_priority_task);
-        
-        Task* current_task = highest_priority_task;
-        int run_time = IMPLEMENTATION_SLICE;
-        if(highest_priority_task->burst - run_time > 0){
-            enqueue(task_queue, highest_priority_task);
+
+        if(task_queue->head != NULL){
+            Task* next_highest_priority_task = task_queue->head->task;
+            
+            start(task_queue);
+            while((cursor_task = next(task_queue)) != NULL){
+                if(cursor_task->priority == highest_priority_task->priority){
+                    next_highest_priority_task = cursor_task;
+                }
+            }
+            
+            if(next_highest_priority_task != NULL){
+                if(next_highest_priority_task->priority != highest_priority_task->priority){
+                    time_quantum = highest_priority_task->burst;
+                }else{
+                    int run_time = highest_priority_task->burst <= QUANTUM ? highest_priority_task->burst: QUANTUM;;
+                    if(highest_priority_task->burst - run_time > 0){
+                        enqueue(task_queue, highest_priority_task);
+                    }
+                    time_quantum = run_time;
+                }
+            }else{
+                time_quantum = highest_priority_task->burst;
+            }
         }
+        
+        
+        
 
         return highest_priority_task;
     }
@@ -79,11 +103,11 @@ void schedule(){
     float avg_response_time = 0;
 
     int i = 0;
-    int time_quantum;
+    
     Task *current_task;
     while((current_task = pickNextTask()) != NULL){
-        time_quantum = IMPLEMENTATION_SLICE;
-
+        //time_quantum = IMPLEMENTATION_SLICE;
+        
         run(current_task, time_quantum);
 
         current_time_unit += time_quantum;

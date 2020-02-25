@@ -43,7 +43,7 @@ Task* pickNextTask(){
         start(task_queue);
         Task* cursor_task;
         while((cursor_task = next(task_queue)) != NULL){
-            if(cursor_task->priority < highest_priority_task->priority){
+            if(cursor_task->priority > highest_priority_task->priority){
                 highest_priority_task = cursor_task;
             }
         }
