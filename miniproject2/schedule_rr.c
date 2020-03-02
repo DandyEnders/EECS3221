@@ -75,20 +75,20 @@ void schedule(){
 
         run(current_task, time_quantum);
 
+        int current_task_index = current_task->tid - 1;
+        
+        // when task is for the first time responded,
+        if(response_time[current_task_index] == 0){
+            response_time[current_task_index] = 1;
+            total_response_time += current_time_unit;
+        }
+
         current_time_unit += time_quantum;
         current_task->burst -= time_quantum;
 
         // while T1 is running for 20 units, T2..T8 waits 20 units.
         // T1's_total_waiting_time = T1_burst_time * len(T2..T8)
         total_waiting_time += time_quantum * (n_remaining_task - 1);
-
-        int current_task_index = current_task->tid - 1;
-        
-        // when task is for the first time responded,
-        if(response_time[current_task_index] == 0){
-            response_time[current_task_index] = current_time_unit;
-            total_response_time += current_time_unit;
-        }
 
         // when task is done running,
         if(current_task->burst == 0){
