@@ -1,17 +1,11 @@
 /**
  * Driver.c
- *
- * Schedule is in the format
- *
- *  [name] [priority] [CPU burst]
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "task.h"
-#include "list.h"
 #include "schedulers.h"
 
 #define SIZE    100
@@ -19,32 +13,33 @@
 int main(int argc, char *argv[])
 {
     FILE *in;
+    FILE *out;
     char *temp;
     char task[SIZE];
 
-    char *name;
-    int priority;
-    int burst;
+    int request;
     
     in = fopen(argv[1],"r");
+    out = fopen(argv[2],"w");
     
     while (fgets(task,SIZE,in) != NULL) {
-        
-        temp = strdup(task);
-        name = strsep(&temp,",");
-        priority = atoi(strsep(&temp,","));
-        burst = atoi(strsep(&temp,","));
+        temp = strtok(task, "\n");
+        request = atoi(strsep(&temp,"\n"));
 
         // add the task to the scheduler's list of tasks
-        add(name,priority,burst);
+        add(request);
 
         free(temp);
     }
 
+    
     fclose(in);
-
+    
     // invoke the scheduler
-    schedule();
+    schedule(out);
+
+    fclose(out);
+    
 
     return 0;
 }

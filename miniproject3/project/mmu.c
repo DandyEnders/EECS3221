@@ -104,10 +104,10 @@ int get_page_table_page(int a_frame_number){
 }
 
 int get_LRU_page_number(){
-    int lowest_count = 2147483647;
-    int lowest_page = 2147483647;
+    int lowest_count = 2147483000;
+    int lowest_page = 2147483000;
     for (int i = 0; i < PAGE_ENTRIES; i++) {
-        if(page_table[i][1] >= 0){
+        if(page_table[i][0] != -1){
             if(page_table[i][1] < lowest_count){
                 lowest_page = i;
                 lowest_count = page_table[i][1];
@@ -118,26 +118,35 @@ int get_LRU_page_number(){
 }
 
 void update_page_table(int page_number, int frame_number){
-    page_table[page_number][0] = frame_number;
-    page_table[page_number][1] = page_table_counter;
-    page_table_counter = page_table_counter + 1;
+    if(frame_number != -1){
+        page_table[page_number][0] = frame_number;
+        page_table[page_number][1] = page_table_counter;
+        page_table_counter = page_table_counter + 1;
+    }else{
+        page_table[page_number][0] = -1;
+        page_table[page_number][1] = -1;
+    }
+    
 }
 
 void update_tlb(int page_number, int frame_number){
-    if (tlb_head == -1){
-        // empty then add one
-        tlb_head = 0;
-        tlb_tail = 0;
-    }else{
-        // non-empty then go next (wrap around)
-        tlb_head = tlb_head + 1;
-        tlb_head = tlb_head % TLB_ENTRIES;
+    if (frame_number != -1){
+        if (tlb_head == -1){
+            // empty then add one
+            tlb_head = 0;
+            tlb_tail = 0;
+        }else{
+            // non-empty then go next (wrap around)
+            tlb_head = tlb_head + 1;
+            tlb_head = tlb_head % TLB_ENTRIES;
 
-        tlb_tail = tlb_tail + 1;
-        tlb_tail = tlb_tail % TLB_ENTRIES;
+            tlb_tail = tlb_tail + 1;
+            tlb_tail = tlb_tail % TLB_ENTRIES;
+        }
     }
     tlb[tlb_tail][0] = page_number;
     tlb[tlb_tail][1] = frame_number;
+    
 }
 
 
@@ -226,7 +235,7 @@ int main(int n_arg, char *args[]){
                     queried_value = physical_memory[address_physical];
 
                     // notify tlb
-                    // update_tlb(page_number, frame_number); // UPDATE THIS IF FORUM WRONG -----------------------------------------------
+                    update_tlb(page_number, frame_number); // UPDATE THIS IF FORUM WRONG -----------------------------------------------
                 }else{
                     // page table miss
                     address_page = page_number * PAGE_SIZE;
@@ -254,17 +263,18 @@ int main(int n_arg, char *args[]){
                         // memory full. need to swap with LRU algorithm
                         // 1. page out
                         int LRU_page_num = get_LRU_page_number();
-                        original_frame_address = get_page_table_page(LRU_page_num);
+                        original_frame_address = page_table[LRU_page_num][0];
                         original_page_address = LRU_page_num * PAGE_SIZE;
                         memcpy(back_store + original_page_address, physical_memory + original_frame_address, PAGE_SIZE);
-                        // 2. change to invalid ( skip ) 
+                        // 2. change to invalid
+                        update_page_table(LRU_page_num, -1);
+                        update_tlb(LRU_page_num, -1);
                         // 3. page in
-                        memcpy(physical_memory + original_page_address, back_store + address_page, PAGE_SIZE);
-
-                        frame_number = original_page_address;
+                        memcpy(physical_memory + original_frame_address, back_store + address_page, PAGE_SIZE);
+                        // 4. validate
+                        frame_number = original_frame_address;
                         address_physical = frame_number + offset;
                         queried_value = physical_memory[address_physical];
-
                         update_page_table(page_number, frame_number);
                         update_tlb(page_number, frame_number);
                     }

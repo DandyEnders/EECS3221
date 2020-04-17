@@ -1,0 +1,18 @@
+
+FCFS Algorithm
+Initial head psoition = 33
+Seek Sequence is:
+
+Total head movement for FCFS = 0
+
+SCAN Algorithm
+Initial head psoition = 33
+Seek Sequence is:
+
+Total head movement for SCAN = 0
+
+C_SCAN Algorithm
+Initial head psoition = 33
+Seek Sequence is:
+
+Total head movement for C_SCAN = 0
