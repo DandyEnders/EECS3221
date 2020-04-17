@@ -14,7 +14,7 @@ to compile the program, and
 where $1 corresponds to input file with default ./input.txt, and 
 $2 corresponds to output file with default ./output.txt.
 
-# Scripted run#
+# Scripted run
 To run convenently the above, do the following:
 ```
 #default ./input.txt input and ./output.txt
