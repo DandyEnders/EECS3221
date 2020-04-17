@@ -1,7 +1,26 @@
-run_all.bash is a script to make, run, clean and show all the neccessary output.
+\section{Summary}
+run_program.bash is a script to clean, make, run, clean and output input.txt's 
+scheduling process result to output.txt.
 
-Run convenently with following:
+\section{Manual run}
+If you want to manually run this program, do:
 ```
-bash run_all.bash {test_txt | default=./test/schedule.txt}
+make schedule
 ```
-will run test_txt schedule with all scheduling algorithms and output on stdout.
+to compile the program, and
+```
+./schedule ${1:-./input.txt} ${2:-./output.txt}
+```
+where $1 corresponds to input file with default ./input.txt, and 
+$2 corresponds to output file with default ./output.txt.
+
+\section{Scripted run}
+To run convenently the above, do the following:
+```
+#default ./input.txt input and ./output.txt
+bash run_program.bash
+
+#custom input and output
+bash run_program.bash <input_txt> <output_txt>
+```
+Then, look at output.txt for the process result.

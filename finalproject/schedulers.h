@@ -1,9 +1,8 @@
-// add a task to the list 
-void add(int cylinder_request);
+// initalizing things
+void init();
 
-// selects next task to run, dispatch process to CPU.
-int pickNextRequest();
+// add a request to the scheduler 
+void add(int cylinder_request);
 
 // invoke the scheduler
 void schedule();
-

@@ -21,6 +21,8 @@ int main(int argc, char *argv[])
     
     in = fopen(argv[1],"r");
     out = fopen(argv[2],"w");
+
+    init();
     
     while (fgets(task,SIZE,in) != NULL) {
         temp = strtok(task, "\n");
