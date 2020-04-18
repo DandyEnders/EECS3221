@@ -112,25 +112,37 @@ void scan_schedule(FILE* output){
         }
     }
 
-    // Go all the way left
-    distance = abs(0 - last_valid_head);
-    last_valid_head = 0;
-    head_movement = head_movement + distance;
+    int is_more_request_on_right = 0;
 
-    // go all valid right
-    for(int i = 0; i < N_MAX_CYLINDERS; i++){
+    for(int i = INITIAL_HEAD_POSITION; i < N_MAX_CYLINDERS; i++){
         if(cylinder_copy[i] != NO_REQUEST){
-            distance = abs(i - last_valid_head);
-            last_valid_head = i;
-            head_movement = head_movement + distance;
-
-            char temp[10] = "";
-            sprintf(temp, "%d\n", i);
-            strcat(seek_seq_str, temp);
-            // request handled
-            cylinder_copy[i] = NO_REQUEST;
+            is_more_request_on_right = 1;
         }
     }
+
+    if(is_more_request_on_right == 1){
+        // Go all the way left
+        distance = abs(0 - last_valid_head);
+        last_valid_head = 0;
+        head_movement = head_movement + distance;
+
+        // go all valid right
+        for(int i = 0; i < N_MAX_CYLINDERS; i++){
+            if(cylinder_copy[i] != NO_REQUEST){
+                distance = abs(i - last_valid_head);
+                last_valid_head = i;
+                head_movement = head_movement + distance;
+
+                char temp[10] = "";
+                sprintf(temp, "%d\n", i);
+                strcat(seek_seq_str, temp);
+                // request handled
+                cylinder_copy[i] = NO_REQUEST;
+            }
+        }
+    }
+
+    
 
     print_result(output, "SCAN", seek_seq_str, head_movement);
 }
@@ -162,30 +174,42 @@ void cscan_schedule(FILE* output){
         }
     }
 
-    // Go all the way right
-    distance = abs((N_MAX_CYLINDERS - 1) - last_valid_head);
-    last_valid_head = (N_MAX_CYLINDERS - 1);
-    head_movement = head_movement + distance;
+    int is_more_request_on_left = 0;
 
-    // Go all the way left
-    distance = abs(0 - last_valid_head);
-    last_valid_head = 0;
-    head_movement = head_movement + distance;
-
-    // go all valid right
-    for(int i = 0; i < N_MAX_CYLINDERS; i++){
+    for(int i = INITIAL_HEAD_POSITION; i > 0; i--){
         if(cylinder_copy[i] != NO_REQUEST){
-            distance = abs(i - last_valid_head);
-            last_valid_head = i;
-            head_movement = head_movement + distance;
-
-            char temp[10] = "";
-            sprintf(temp, "%d\n", i);
-            strcat(seek_seq_str, temp);
-            // request handled
-            cylinder_copy[i] = NO_REQUEST;
+            is_more_request_on_left = 1;
         }
     }
+
+    if(is_more_request_on_left == 1){
+        // Go all the way right
+        distance = abs((N_MAX_CYLINDERS - 1) - last_valid_head);
+        last_valid_head = (N_MAX_CYLINDERS - 1);
+        head_movement = head_movement + distance;
+
+        // Go all the way left
+        distance = abs(0 - last_valid_head);
+        last_valid_head = 0;
+        head_movement = head_movement + distance;
+
+        // go all valid right
+        for(int i = 0; i < N_MAX_CYLINDERS; i++){
+            if(cylinder_copy[i] != NO_REQUEST){
+                distance = abs(i - last_valid_head);
+                last_valid_head = i;
+                head_movement = head_movement + distance;
+
+                char temp[10] = "";
+                sprintf(temp, "%d\n", i);
+                strcat(seek_seq_str, temp);
+                // request handled
+                cylinder_copy[i] = NO_REQUEST;
+            }
+        }
+    }
+
+    
 
     print_result(output, "C_SCAN", seek_seq_str, head_movement);
 }
