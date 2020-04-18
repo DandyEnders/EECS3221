@@ -1,5 +1,6 @@
 /**
  * Driver.c
+ * schedule <input.txt> <initial_head_pos> output.txt
  */
 
 #include <stdio.h>
@@ -20,7 +21,8 @@ int main(int argc, char *argv[])
     int request;
     
     in = fopen(argv[1],"r");
-    out = fopen(argv[2],"w");
+    int initial_head_position = atoi(argv[2]);
+    out = fopen(argv[3],"w");
 
     init();
     
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
     fclose(in);
     
     // invoke the scheduler
-    schedule(out);
+    schedule(out, initial_head_position);
 
     fclose(out);
     

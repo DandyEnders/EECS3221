@@ -4,7 +4,7 @@
 
 #include "schedulers.h"
 
-#define INITIAL_HEAD_POSITION 33
+// #define INITIAL_HEAD_POSITION 33
 #define N_MAX_CYLINDERS 100
 
 #define NO_REQUEST -1
@@ -28,6 +28,8 @@ int available_requests_idx = 0;
 
 // id = an order added
 int unique_id = 0;
+
+int initial_head_position = 33;
 
 void init(){
     for(int i = 0; i< N_MAX_CYLINDERS; i++){
@@ -60,7 +62,7 @@ void print_result(
                     int head_movement
                 ){
     fprintf(output, "\n%s Algorithm\n", algorithm_type);
-    fprintf(output, "Initial head position = %d\n", INITIAL_HEAD_POSITION);
+    fprintf(output, "Initial head position = %d\n", initial_head_position);
     fprintf(output, "Seek Sequence is:\n");
     fprintf(output, "%s", seek_sequence_out);
     fprintf(output, "Total head movement for %s = %d\n", algorithm_type, head_movement);
@@ -69,7 +71,7 @@ void print_result(
 void fcfs_schedule(FILE* output){
     int head_movement = 0;
     char seek_seq_str[(N_MAX_CYLINDERS * 11)] = "";
-    int current_head = INITIAL_HEAD_POSITION;
+    int current_head = initial_head_position;
     int distance;
 
     for(int i = 0; i < available_requests_idx; i ++){
@@ -88,7 +90,7 @@ void fcfs_schedule(FILE* output){
 void scan_schedule(FILE* output){
     int head_movement = 0;
     char seek_seq_str[(N_MAX_CYLINDERS * 11)] = "";
-    int last_valid_head = INITIAL_HEAD_POSITION;
+    int last_valid_head = initial_head_position;
     int distance;
 
     int cylinder_copy[N_MAX_CYLINDERS];
@@ -114,7 +116,7 @@ void scan_schedule(FILE* output){
 
     int is_more_request_on_right = 0;
 
-    for(int i = INITIAL_HEAD_POSITION; i < N_MAX_CYLINDERS; i++){
+    for(int i = initial_head_position; i < N_MAX_CYLINDERS; i++){
         if(cylinder_copy[i] != NO_REQUEST){
             is_more_request_on_right = 1;
         }
@@ -150,7 +152,7 @@ void scan_schedule(FILE* output){
 void cscan_schedule(FILE* output){
     int head_movement = 0;
     char seek_seq_str[(N_MAX_CYLINDERS * 11)] = "";
-    int last_valid_head = INITIAL_HEAD_POSITION;
+    int last_valid_head = initial_head_position;
     int distance;
 
     int cylinder_copy[N_MAX_CYLINDERS];
@@ -176,7 +178,7 @@ void cscan_schedule(FILE* output){
 
     int is_more_request_on_left = 0;
 
-    for(int i = INITIAL_HEAD_POSITION; i > 0; i--){
+    for(int i = initial_head_position; i > 0; i--){
         if(cylinder_copy[i] != NO_REQUEST){
             is_more_request_on_left = 1;
         }
@@ -215,8 +217,9 @@ void cscan_schedule(FILE* output){
 }
 
 // invoke the scheduler
-void schedule(FILE* output){
+void schedule(FILE* output, int init_head_pos){
     // printf("scheduling start\n");
+    initial_head_position = init_head_pos;
     fcfs_schedule(output);
     scan_schedule(output);
     cscan_schedule(output);

@@ -9,10 +9,11 @@ make schedule
 ```
 to compile the program, and
 ```
-./schedule ${1:-./input.txt} ${2:-./output.txt}
+./schedule ${1:-./input.txt} ${2:-33} ${3:-./output.txt}
 ```
 where $1 corresponds to input file with default ./input.txt, and 
-$2 corresponds to output file with default ./output.txt.
+$2 corresponds to initial head position, and
+$3 corresponds to output file with default ./output.txt.
 
 # Scripted run
 To run convenently the above, do the following:
@@ -21,6 +22,6 @@ To run convenently the above, do the following:
 bash run_program.bash
 
 #custom input and output
-bash run_program.bash <input_txt> <output_txt>
+bash run_program.bash <input_txt> <initial_head_position> <output_txt>
 ```
 Then, look at output.txt for the process result.
